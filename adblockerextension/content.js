@@ -9,9 +9,12 @@ const adSelectors = [
     '.ad-container',  // Advertentie-container
     '.ad-banner',  // Advertentiebanners
   ];
+
+  console.log("test");
   
   // Functie om advertenties te verwijderen
   function removeAds() {
+    console.log("running");
     adSelectors.forEach(selector => {
       const ads = document.querySelectorAll(selector);
       ads.forEach(ad => ad.remove());  // Verwijder elk geselecteerd advertentie-element

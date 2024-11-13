@@ -1,0 +1,15 @@
+{
+    "manifest_version": 3,
+    "name": "YouTube Ad Blocker",
+    "version": "1.0",
+    "description": "Blokkeert advertenties op YouTube.",
+    "permissions": ["scripting", "activeTab"],
+    "content_scripts": [
+      {
+        "matches": ["*://*.youtube.com/*"],
+        "js": ["content.js"]
+      }
+    ],
+    "action": {}
+  }
+  
