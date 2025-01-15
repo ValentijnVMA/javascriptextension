@@ -36,7 +36,54 @@ async function getLocationInfo(ipAddress) {
     }
 }
 
-// Verkrijg huidige Wi-Fi-verbinding en toon locatie
+// Functie om apparaten te zien die verbonden zijn via ARP
+function getConnectedDevices() {
+    console.log('Zoeken naar verbonden apparaten...');
+    exec('arp -a', (error, stdout, stderr) => {
+        if (error) {
+            console.error(`Er is een fout opgetreden tijdens het ophalen van verbonden apparaten: ${error.message}`);
+            return;
+        }
+
+        console.log('Verbonden apparaten op het netwerk (via ARP):');
+        const devices = stdout.split('\n')
+            .filter(line => line.includes('.')) // Filter regels met IP-adressen
+            .map(line => {
+                const parts = line.split(/\s+/);
+                return {
+                    ip: parts[0],
+                    mac: parts[1],
+                    type: parts[2] || 'Onbekend'
+                };
+            });
+
+        devices.forEach(device => {
+            console.log(`IP-adres: ${device.ip}`);
+            console.log(`MAC-adres: ${device.mac}`);
+            console.log(`Type: ${device.type}`);
+            console.log('----');
+        });
+    });
+}
+
+// Functie om apparaten te scannen met nmap
+function scanNetwork(ipRange) {
+    console.log(`Scannen van netwerk in bereik: ${ipRange}...`);
+    exec(`nmap -sn ${ipRange}`, (error, stdout, stderr) => {
+        if (error) {
+            console.error(`Er is een fout opgetreden tijdens het scannen: ${error.message}`);
+            return;
+        }
+
+        console.log('Scangebied resultaten:');
+        const lines = stdout.split('\n');
+        lines.forEach((line) => {
+            console.log(line.trim());
+        });
+    });
+}
+
+// Verkrijg huidige Wi-Fi-verbinding en zoek naar verbonden apparaten
 wifi.getCurrentConnections(async (error, currentConnections) => {
     if (error) {
         console.log('Er is een fout opgetreden: ', error);
@@ -47,7 +94,7 @@ wifi.getCurrentConnections(async (error, currentConnections) => {
         console.log('BSSID: ', connection.bssid || 'Niet beschikbaar');
         console.log('Signaalsterkte: ', connection.signal_level || 'Niet beschikbaar');
         console.log('Frequentie: ', connection.frequency ? connection.frequency + ' MHz' : 'Niet beschikbaar');
-        
+
         const externalIPAddress = await getExternalIPAddress();
         if (externalIPAddress) {
             console.log('Extern IP-adres: ', externalIPAddress);
@@ -79,6 +126,12 @@ wifi.getCurrentConnections(async (error, currentConnections) => {
             console.log('Kan het Wi-Fi-wachtwoord niet ophalen zonder een geldige SSID.');
         }
 
+        // Haal verbonden apparaten op
+        getConnectedDevices();
+
+        // Netwerkbereik instellen (bijv. 192.168.64.0/24)
+        const ipRange = '192.168.64.0/24';
+        scanNetwork(ipRange);
     } else {
         console.log('Geen actieve Wi-Fi-verbinding gevonden.');
     }
